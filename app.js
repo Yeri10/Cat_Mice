@@ -274,6 +274,7 @@ function tickCatchRules() {
     const ids = roomPlayerIds(room);
     const cats = ids.map((id) => players[id]).filter((p) => p?.role === "cat");
     const mice = ids.map((id) => players[id]).filter((p) => p?.role === "mouse" && !p?.caught);
+    const totalMice = ids.map((id) => players[id]).filter((p) => p?.role === "mouse").length;
     let endedByCatch = false;
 
     for (const cat of cats) {
@@ -294,9 +295,14 @@ function tickCatchRules() {
               byCatId: cat.id
             });
             proximityTimers.delete(key);
-            endGame(room, "caught");
-            endedByCatch = true;
-            break;
+            const caughtMice = ids
+              .map((sid) => players[sid])
+              .filter((p) => p?.role === "mouse" && p?.caught).length;
+            if (totalMice > 0 && caughtMice >= totalMice) {
+              endGame(room, "caught");
+              endedByCatch = true;
+              break;
+            }
           }
         } else {
           proximityTimers.delete(key);
