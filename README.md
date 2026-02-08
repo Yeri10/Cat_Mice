@@ -11,7 +11,7 @@ Yirun Ye & Shuran Zhang
 GitHub: [https://github.com/Yeri10/Cat_Mice](https://github.com/Yeri10/Cat_Mice)
 Web: [https://cat-mice.onrender.com/](https://cat-mice.onrender.com/)
 
----
+
 
 # Project Description
 
@@ -21,7 +21,6 @@ Players join the same room through a shared browser link and are assigned roles:
 
 The project explores multiplayer presence, spatial interaction, and performative digital territory through playful competition and collaboration.
 
----
 
 # Gameplay
 
@@ -37,7 +36,7 @@ When a Mouse is touched by the Cat, it becomes caught and can no longer move.
 The game includes a countdown timer.
 The game ends when time runs out or when all Mice have been caught.
 
----
+
 
 #  Concept
 
@@ -52,7 +51,7 @@ The project sits between:
 * Post-digital embodiment
 * Performative interface design
 
----
+
 
 # Technology
 
@@ -63,7 +62,7 @@ The project sits between:
 * JavaScript
 * Local server networking
 
----
+
 
 # How to Run (Local)
 
@@ -91,7 +90,7 @@ node app.js
 http://localhost:3000
 ```
 
----
+
 
 #  Inspiration / Reference
 
