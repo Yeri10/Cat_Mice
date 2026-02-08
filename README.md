@@ -1,4 +1,4 @@
-![preview](public/preview.png)
+![preview](public/preview.jpg)
 
 
 # Cat & Mouse: Multiplayer Territory Game
@@ -55,12 +55,12 @@ The project sits between:
 
 # Technology
 
-* p5.js
-* Node.js
-* Socket.io (real-time multiplayer)
-* HTML / CSS
-* JavaScript
-* Local server networking
+p5.js
+Node.js
+Socket.io (real-time multiplayer)
+HTML / CSS
+JavaScript
+Local server networking
 
 
 
