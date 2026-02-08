@@ -19,6 +19,7 @@
     [0.16, 0.46, 0.28, 0.46]
   ];
 
+  // Keep this in sync with map.js/app.js so render and collision match.
   function collidesWithWalls(x, y) {
     const viewW = Math.max(1, window.innerWidth || 1);
     const viewH = Math.max(1, window.innerHeight || 1);
@@ -42,6 +43,7 @@
     return false;
   }
 
+  // Simple wall sliding: full move -> X only -> Y only -> stop.
   function resolveMoveWithWalls(fromX, fromY, toX, toY) {
     const tx = clamp01(toX);
     const ty = clamp01(toY);
@@ -178,6 +180,7 @@
 
       const px = Number(me.x) || 0;
       const py = Number(me.y) || 0;
+      // Local prediction for smooth control; server still validates every pos.
       const next = resolveMoveWithWalls(px, py, px + vx, py + vy);
       me.x = next.x;
       me.y = next.y;
