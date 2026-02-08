@@ -17,7 +17,6 @@ let timerLoopId = null;
 let localGameEndsAt = null;
 
 let gameStarted = false;
-let pendingEnterGame = false;
 
 const actionBusy = { start: false };
 
@@ -94,7 +93,6 @@ function startTimerLoop() {
 function setGameScene(active) {
   gameStarted = active;
   if (!active) {
-    pendingEnterGame = false;
     localGameEndsAt = null;
   }
 
@@ -150,12 +148,9 @@ function initSocket() {
   socket.on("room-state", (state) => {
     roomState = state;
 
-    // Allow local enter-game flow even if server still reports lobby.
     const serverRunning = state?.phase === "running";
-    const shouldShowGame = serverRunning || pendingEnterGame;
-    setGameScene(shouldShowGame);
+    setGameScene(serverRunning);
     if (serverRunning) {
-      pendingEnterGame = false;
       if (Number.isFinite(state.endsAt)) {
         localGameEndsAt = state.endsAt;
       }
@@ -183,7 +178,6 @@ function initSocket() {
   socket.on("game-started", () => {
     // server confirmed running
     setGameScene(true);
-    pendingEnterGame = false;
     if (Number.isFinite(roomState?.endsAt)) {
       localGameEndsAt = roomState.endsAt;
     }
@@ -211,24 +205,6 @@ function ensureLocalPlayer() {
   if (!Number.isFinite(players[myId].x)) players[myId].x = 0.5;
   if (!Number.isFinite(players[myId].y)) players[myId].y = 0.5;
   if (typeof players[myId].caught !== "boolean") players[myId].caught = false;
-}
-
-function applySeatSpawnForMe() {
-  if (!myId) return;
-  ensureLocalPlayer();
-  const seat = mySeatIndex();
-  if (seat === null) return;
-  const anchors = [
-    { x: 0.50, y: 0.16 },
-    { x: 0.76, y: 0.31 },
-    { x: 0.76, y: 0.65 },
-    { x: 0.50, y: 0.80 },
-    { x: 0.24, y: 0.65 },
-    { x: 0.24, y: 0.31 }
-  ];
-  const a = anchors[seat] || { x: 0.5, y: 0.5 };
-  if (!Number.isFinite(players[myId].x)) players[myId].x = a.x;
-  if (!Number.isFinite(players[myId].y)) players[myId].y = a.y;
 }
 
 function autoTakeSeatFromBoard(clientX, clientY) {
@@ -348,14 +324,7 @@ function bindUI() {
     if (roomState.phase !== "lobby") return;
 
     setError("");
-    setStatus("Game scene opened.");
-    pendingEnterGame = true;
-    localGameEndsAt = Date.now() + (5 * 60 * 1000);
-    applySeatSpawnForMe();
-    ensureLocalPlayer();
-    players[myId].caught = false;
-    setGameScene(true);
-    playerController?.setEnabled(true);
+    setStatus("Starting game...");
     socket?.emit("start-game");
   };
 

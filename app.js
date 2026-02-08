@@ -38,7 +38,7 @@ app.get("/favicon.ico", (req, res) => {
 app.use(express.static("public"));
 
 const MAX_SEATS = 6;
-const MIN_PLAYERS = 3;
+const MIN_PLAYERS = 2;
 const MAX_PLAYERS = 4;
 const DEFAULT_ROOM_ID = "LOBBY";
 
@@ -175,8 +175,8 @@ function startGame(room, bySocketId) {
   }
 
   const seated = roomPlayerIds(room);
-  if (seated.length < 3 || seated.length > 4) {
-    return { ok: false, message: "Need 3-4 seated players (1 cat + 2-3 mice)." };
+  if (seated.length < 2 || seated.length > 4) {
+    return { ok: false, message: "Need 2-4 seated players (1 cat + 1-3 mice)." };
   }
 
   const catIndex = Math.floor(Math.random() * seated.length);
