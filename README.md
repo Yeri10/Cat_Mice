@@ -1,5 +1,4 @@
-![e340e25e21d598d087f92dc986759f75](https://github.com/user-attachments/assets/c15f504d-72cc-42f9-95d7-8c7fdebb10ae)
-
+<img width="1512" height="826" alt="Cat   Mouse" src="https://github.com/user-attachments/assets/34c39490-1a03-4124-94f6-8e1eba09fcb8" />
 
 # Cat & Mouse: Multiplayer Territory Game
 
