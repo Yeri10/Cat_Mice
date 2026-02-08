@@ -1,0 +1,29 @@
+{
+  "name": "collaborative-poem",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "start:local": "HOST=127.0.0.1 PORT=3000 node app.js",
+    "dev": "HOST=127.0.0.1 node --watch app.js",
+    "start:lan": "HOST=0.0.0.0 node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ngautumn/collaborative-poem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Ngautumn/collaborative-poem/issues"
+  },
+  "homepage": "https://github.com/Ngautumn/collaborative-poem#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  }
+}

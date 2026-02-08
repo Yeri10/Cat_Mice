@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Cat & Mouse Room</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- socket -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- p5 -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+  <!-- 样式 -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- 页面层级控制 -->
+  <style>
+    html,body{
+      margin:0;
+      padding:0;
+      height:100%;
+      overflow:hidden;
+    }
+
+    /* p5 canvas：透明叠加 */
+    canvas{
+      position:fixed !important;
+      inset:0 !important;
+      z-index:5;
+      background:transparent !important;
+      pointer-events:none;
+    }
+
+    /* HUD */
+    #hud{
+      z-index:10;
+    }
+
+    /* lobby */
+    #lobbyOverlay{
+      z-index:20;
+    }
+  </style>
+</head>
+
+<body class="scene-cover">
+
+  <div id="coverScene" class="scene-layer">
+    <div id="lobbyOverlay" class="overlay">
+      <div class="panel">
+        <div class="title">Cat, Mice</div>
+        <div class="sub">
+          Sit first, then start. 3-4 players only: 1 cat + 2-3 mice.
+        </div>
+
+        <div class="stage">
+          <div class="table-title">Seats (Seat 1 host-only)</div>
+          <div id="seats" class="seats"></div>
+          <div id="roomLine" class="room-line"></div>
+          <div id="statusText" class="room-line"></div>
+          <div id="errorText" class="error"></div>
+
+          <div class="start-wrap">
+            <button id="hostBtn" class="secondary">Become Host</button>
+            <button id="startBtn" class="warn">Start game (host only)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameScene" class="scene-layer">
+    <div id="hud">
+      <div class="timer-line" id="timer">--:--</div>
+    </div>
+  </div>
+
+
+  <!-- game map painter -->
+  <script src="map.js"></script>
+
+  <!-- player controller -->
+  <script src="player.js"></script>
+
+  <!-- p5 sketch -->
+  <script src="sketch.js"></script>
+
+</body>
+</html>
