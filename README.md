@@ -1,14 +1,15 @@
-![preview](public/preview.jpg)
+![preview](./public/preview.jpg)
 
 
 # Cat & Mouse: Multiplayer Territory Game
 
-A real-time multiplayer spatial pursuit game
+<p align="center"><i>A real-time multiplayer spatial pursuit game</i></p>
 
 **Group Project**
 Yirun Ye & Shuran Zhang
 
 GitHub: [https://github.com/Yeri10/Cat_Mice](https://github.com/Yeri10/Cat_Mice)
+
 Web: [https://cat-mice.onrender.com/](https://cat-mice.onrender.com/)
 
 
