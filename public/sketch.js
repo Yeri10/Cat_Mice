@@ -188,6 +188,17 @@ function initSocket() {
       localGameEndsAt = roomState.endsAt;
     }
   });
+
+  socket.on("game-ended", ({ reason }) => {
+    if (reason === "caught") {
+      setStatus("Game over: mouse was caught.");
+    } else if (reason === "time") {
+      setStatus("Game ended: time is up.");
+    } else {
+      setStatus("Game ended.");
+    }
+    renderTimer();
+  });
 }
 
 // ----- Lobby seats -----
