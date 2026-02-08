@@ -5,6 +5,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { fileURLToPath } from "url";
 
+// Load local .env for development. Render/production uses platform env vars.
 function loadLocalEnv() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const envPath = path.join(__dirname, ".env");
@@ -46,6 +47,7 @@ const CATCH_DIST = 0.06;
 const CATCH_HOLD_MS = 1200;
 const ROUND_MS = 5 * 60 * 1000;
 
+// In-memory state (single-process runtime).
 const players = {};
 const rooms = {};
 const proximityTimers = new Map();
@@ -66,6 +68,7 @@ const WALL_SEGMENTS = [
   [0.16, 0.46, 0.28, 0.46]
 ];
 
+// Collision checks use normalized coordinates [0..1].
 function collidesWithWalls(x, y) {
   const r = 0.028;
   for (const [x1, y1, x2, y2] of WALL_SEGMENTS) {
@@ -82,6 +85,7 @@ function collidesWithWalls(x, y) {
   return false;
 }
 
+// Attempt full move first, then axis-sliding, else keep previous position.
 function resolveMoveWithWalls(fromX, fromY, toX, toY) {
   const tx = clamp01(toX);
   const ty = clamp01(toY);
@@ -105,6 +109,7 @@ function resolveMoveWithWalls(fromX, fromY, toX, toY) {
   return { x: clamp01(fromX), y: clamp01(fromY) };
 }
 
+// Default room keeps simple join flow: every new socket enters this lobby.
 function getOrCreateDefaultRoom() {
   if (!rooms[DEFAULT_ROOM_ID]) {
     rooms[DEFAULT_ROOM_ID] = {
@@ -156,6 +161,7 @@ function emitRoom(roomId) {
   io.to(roomId).emit("room-state", roomPublicState(room));
 }
 
+// Reset room back to lobby and notify all clients.
 function endGame(room, reason = "time") {
   if (!room) return;
 
@@ -177,6 +183,7 @@ function endGame(room, reason = "time") {
   io.to(room.id).emit("game-ended", { roomId: room.id, reason });
 }
 
+// Remove player seat/host role and clean empty room state.
 function clearPlayerFromRoom(socketId) {
   const p = players[socketId];
   if (!p?.roomId) return;
@@ -217,6 +224,7 @@ function clearPlayerFromRoom(socketId) {
   emitRoom(room.id);
 }
 
+// Validate start conditions and assign one random cat.
 function startGame(room, bySocketId) {
   if (room.hostId !== bySocketId) {
     return { ok: false, message: "Only host can start the game." };
@@ -260,6 +268,7 @@ function startGame(room, bySocketId) {
   return { ok: true };
 }
 
+// Main game loop: timeout checks, catch checks, and player state broadcast.
 function tickCatchRules() {
   const now = Date.now();
 
@@ -282,6 +291,7 @@ function tickCatchRules() {
         const dx = cat.x - mouse.x;
         const dy = cat.y - mouse.y;
         const d = Math.hypot(dx, dy);
+        // room|cat|mouse key ensures catch-hold timer is per pair.
         const key = `${room.id}|${cat.id}|${mouse.id}`;
 
         if (d < CATCH_DIST) {
@@ -324,6 +334,7 @@ function tickCatchRules() {
 
 setInterval(tickCatchRules, 150);
 
+// Per-socket lifecycle and room/game actions.
 io.on("connection", (socket) => {
   players[socket.id] = {
     id: socket.id,
@@ -470,6 +481,7 @@ io.on("connection", (socket) => {
 
     const fromX = Number.isFinite(p.x) ? p.x : 0.5;
     const fromY = Number.isFinite(p.y) ? p.y : 0.5;
+    // Server-side validation prevents desync and client-side wall bypass.
     const next = resolveMoveWithWalls(fromX, fromY, x, y);
     p.x = next.x;
     p.y = next.y;

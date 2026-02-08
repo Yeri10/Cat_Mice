@@ -148,6 +148,7 @@ function initSocket() {
   socket.on("room-state", (state) => {
     roomState = state;
 
+    // Server phase is the source of truth for scene switching.
     const serverRunning = state?.phase === "running";
     setGameScene(serverRunning);
     if (serverRunning) {
@@ -168,7 +169,7 @@ function initSocket() {
       if (!players[myId]) {
         players[myId] = myLocal;
       } else {
-        // Keep local movement smooth for self; accept server role/caught status.
+        // Keep local movement smooth for self; still trust server for role/caught.
         if (Number.isFinite(myLocal.x)) players[myId].x = myLocal.x;
         if (Number.isFinite(myLocal.y)) players[myId].y = myLocal.y;
       }
@@ -282,7 +283,7 @@ function renderSeats() {
       const hostTag = isHostSeat ? `<div class="host-tag">HOST</div>` : "";
       const occupant = players[seat.socketId];
       const icon = occupant?.role === "cat" ? "🐱" : occupant?.role === "mouse" ? "🐭" : "🙂";
-      const seatCircle = mine ? `<div class="seat-circle seated-mark">入座</div>` : `<div class="seat-circle">${icon}</div>`;
+      const seatCircle = mine ? `<div class="seat-circle seated-mark">Seated</div>` : `<div class="seat-circle">${icon}</div>`;
       btn.innerHTML = `<div class="idx">Seat ${seat.index + 1}</div><div class="name">${seat.name}</div>${seatCircle}<div class="seat-shadow"></div>${hostTag}`;
       btn.onclick = () => {
         if (mine) socket?.emit("leave-seat");

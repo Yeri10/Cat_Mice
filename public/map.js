@@ -35,6 +35,7 @@
       // maze walls (cartoon chunky)
       stroke("#7a5e58");
       strokeWeight(22);
+      // Visual railing layout (must match collision segments in player.js/app.js).
       const lines = [
         // vertical railings
         [0.12, 0.14, 0.12, 0.34],
@@ -104,6 +105,7 @@
       const seats = roomState?.seats || [];
       let shown = 0;
       let meShown = false;
+      // Seat order controls spawn anchors and render order.
       for (const seat of seats) {
         if (!seat || seat.empty || !seat.socketId) continue;
         const anchor = seatAnchors[seat.index] || { x: 0.5, y: 0.5 };
