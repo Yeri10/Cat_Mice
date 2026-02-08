@@ -1,18 +1,16 @@
-<p align="center">
-  <img src="public/preview.jpg" alt="preview" width="900">
-</p>
+![image](https://user-images.githubusercontent.com/xxxxx.png)
 
-<h1 align="center">Cat & Mouse: Multiplayer Territory Game</h1>
 
-<p align="center"><i>A real-time multiplayer spatial pursuit game</i></p>
+# Cat & Mouse: Multiplayer Territory Game
 
-<p align="center"><b>Group Project</b> Yirun Ye &amp; Shuran Zhang</p>
+A real-time multiplayer spatial pursuit game
 
-<p align="center">
-  GitHub: <a href="https://github.com/Yeri10/Cat_Mice">https://github.com/Yeri10/Cat_Mice</a>
-  <br/>
-  Web: <a href="https://cat-mice.onrender.com/">https://cat-mice.onrender.com/</a>
-</p>
+**Group Project**
+Yirun Ye & Shuran Zhang
+
+GitHub: [https://github.com/Yeri10/Cat_Mice](https://github.com/Yeri10/Cat_Mice)
+
+Web: [https://cat-mice.onrender.com/](https://cat-mice.onrender.com/)
 
 
 # Project Description
