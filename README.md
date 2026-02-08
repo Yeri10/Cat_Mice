@@ -1,4 +1,5 @@
-public/preview.jpg
+![preview](public/preview.png)
+
 
 # Cat & Mouse: Multiplayer Territory Game
 
