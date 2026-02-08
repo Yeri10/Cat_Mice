@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/xxxxx.png)
+![e340e25e21d598d087f92dc986759f75](https://github.com/user-attachments/assets/c15f504d-72cc-42f9-95d7-8c7fdebb10ae)
 
 
 # Cat & Mouse: Multiplayer Territory Game
