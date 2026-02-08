@@ -29,7 +29,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = Number(process.env.PORT) || 3000;
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 
 app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
