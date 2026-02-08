@@ -54,6 +54,57 @@ function clamp01(n) {
   return Math.max(0, Math.min(1, n));
 }
 
+const WALL_SEGMENTS = [
+  [0.12, 0.14, 0.12, 0.34],
+  [0.34, 0.18, 0.34, 0.38],
+  [0.56, 0.12, 0.56, 0.30],
+  [0.78, 0.52, 0.78, 0.72],
+  [0.90, 0.20, 0.90, 0.44],
+  [0.04, 0.58, 0.24, 0.58],
+  [0.30, 0.70, 0.50, 0.70],
+  [0.58, 0.62, 0.74, 0.62],
+  [0.16, 0.46, 0.28, 0.46]
+];
+
+function collidesWithWalls(x, y) {
+  const r = 0.028;
+  for (const [x1, y1, x2, y2] of WALL_SEGMENTS) {
+    if (Math.abs(x1 - x2) < 1e-9) {
+      const minY = Math.min(y1, y2) - r;
+      const maxY = Math.max(y1, y2) + r;
+      if (y >= minY && y <= maxY && Math.abs(x - x1) <= r) return true;
+    } else if (Math.abs(y1 - y2) < 1e-9) {
+      const minX = Math.min(x1, x2) - r;
+      const maxX = Math.max(x1, x2) + r;
+      if (x >= minX && x <= maxX && Math.abs(y - y1) <= r) return true;
+    }
+  }
+  return false;
+}
+
+function resolveMoveWithWalls(fromX, fromY, toX, toY) {
+  const tx = clamp01(toX);
+  const ty = clamp01(toY);
+
+  if (!collidesWithWalls(tx, ty)) {
+    return { x: tx, y: ty };
+  }
+
+  const sx = clamp01(tx);
+  const sy = clamp01(fromY);
+  if (!collidesWithWalls(sx, sy)) {
+    return { x: sx, y: sy };
+  }
+
+  const vx = clamp01(fromX);
+  const vy = clamp01(ty);
+  if (!collidesWithWalls(vx, vy)) {
+    return { x: vx, y: vy };
+  }
+
+  return { x: clamp01(fromX), y: clamp01(fromY) };
+}
+
 function getOrCreateDefaultRoom() {
   if (!rooms[DEFAULT_ROOM_ID]) {
     rooms[DEFAULT_ROOM_ID] = {
@@ -405,8 +456,11 @@ io.on("connection", (socket) => {
       return;
     }
 
-    p.x = clamp01(x);
-    p.y = clamp01(y);
+    const fromX = Number.isFinite(p.x) ? p.x : 0.5;
+    const fromY = Number.isFinite(p.y) ? p.y : 0.5;
+    const next = resolveMoveWithWalls(fromX, fromY, x, y);
+    p.x = next.x;
+    p.y = next.y;
     p.last = Date.now();
   });
 

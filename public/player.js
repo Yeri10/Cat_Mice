@@ -7,6 +7,64 @@
     return Math.max(0, Math.min(1, v));
   }
 
+  const WALL_SEGMENTS = [
+    [0.12, 0.14, 0.12, 0.34],
+    [0.34, 0.18, 0.34, 0.38],
+    [0.56, 0.12, 0.56, 0.30],
+    [0.78, 0.52, 0.78, 0.72],
+    [0.90, 0.20, 0.90, 0.44],
+    [0.04, 0.58, 0.24, 0.58],
+    [0.30, 0.70, 0.50, 0.70],
+    [0.58, 0.62, 0.74, 0.62],
+    [0.16, 0.46, 0.28, 0.46]
+  ];
+
+  function collidesWithWalls(x, y) {
+    const viewW = Math.max(1, window.innerWidth || 1);
+    const viewH = Math.max(1, window.innerHeight || 1);
+    const playerRpx = 26;
+    const wallHalfPx = 11;
+    const hitR = playerRpx + wallHalfPx;
+    const rx = hitR / viewW;
+    const ry = hitR / viewH;
+
+    for (const [x1, y1, x2, y2] of WALL_SEGMENTS) {
+      if (Math.abs(x1 - x2) < 1e-9) {
+        const minY = Math.min(y1, y2) - ry;
+        const maxY = Math.max(y1, y2) + ry;
+        if (y >= minY && y <= maxY && Math.abs(x - x1) <= rx) return true;
+      } else if (Math.abs(y1 - y2) < 1e-9) {
+        const minX = Math.min(x1, x2) - rx;
+        const maxX = Math.max(x1, x2) + rx;
+        if (x >= minX && x <= maxX && Math.abs(y - y1) <= ry) return true;
+      }
+    }
+    return false;
+  }
+
+  function resolveMoveWithWalls(fromX, fromY, toX, toY) {
+    const tx = clamp01(toX);
+    const ty = clamp01(toY);
+
+    if (!collidesWithWalls(tx, ty)) {
+      return { x: tx, y: ty };
+    }
+
+    const sx = clamp01(tx);
+    const sy = clamp01(fromY);
+    if (!collidesWithWalls(sx, sy)) {
+      return { x: sx, y: sy };
+    }
+
+    const vx = clamp01(fromX);
+    const vy = clamp01(ty);
+    if (!collidesWithWalls(vx, vy)) {
+      return { x: vx, y: vy };
+    }
+
+    return { x: clamp01(fromX), y: clamp01(fromY) };
+  }
+
   function create(options = {}) {
     const getPlayers = options.getPlayers || (() => ({}));
     const getMyId = options.getMyId || (() => null);
@@ -118,14 +176,15 @@
       const vx = (dx / len) * state.speedPerSecond * dt;
       const vy = (dy / len) * state.speedPerSecond * dt;
 
-      const nx = clamp01((Number(me.x) || 0) + vx);
-      const ny = clamp01((Number(me.y) || 0) + vy);
-      me.x = nx;
-      me.y = ny;
+      const px = Number(me.x) || 0;
+      const py = Number(me.y) || 0;
+      const next = resolveMoveWithWalls(px, py, px + vx, py + vy);
+      me.x = next.x;
+      me.y = next.y;
 
       const now = Date.now();
       if (state.socket?.connected && now - state.lastEmitAt >= state.emitEveryMs) {
-        state.socket.emit("pos", { x: nx, y: ny });
+        state.socket.emit("pos", { x: me.x, y: me.y });
         state.lastEmitAt = now;
       }
 

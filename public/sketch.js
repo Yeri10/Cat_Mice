@@ -164,8 +164,14 @@ function initSocket() {
   socket.on("players", (allPlayers) => {
     const myLocal = myId ? players[myId] : null;
     players = allPlayers || {};
-    if (myId && myLocal && !players[myId]) {
-      players[myId] = myLocal;
+    if (myId && myLocal) {
+      if (!players[myId]) {
+        players[myId] = myLocal;
+      } else {
+        // Keep local movement smooth for self; accept server role/caught status.
+        if (Number.isFinite(myLocal.x)) players[myId].x = myLocal.x;
+        if (Number.isFinite(myLocal.y)) players[myId].y = myLocal.y;
+      }
     }
     if (gameStarted) ensureLocalPlayer();
   });
