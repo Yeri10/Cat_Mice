@@ -4,7 +4,7 @@
 https://github.com/user-attachments/assets/3df0fb2d-6ad2-4909-99ff-7d1c2b988a9d
 
 
-# Cat & Mice: Multiplayer Territory Game
+# Cat, Mice: Multiplayer Territory Game
 
 A real-time multiplayer spatial pursuit game
 
