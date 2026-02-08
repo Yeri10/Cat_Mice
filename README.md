@@ -24,12 +24,16 @@ The project explores multiplayer presence, spatial interaction, and performative
 # 2. Game Structure 
 
 The game consists of two main phases: Lobby and Running.
+
 **Lobby**
+
 Players enter the same room through a shared browser link.
 Click a seat to join the game.
 The host starts the game.
 The system automatically assigns roles (Cat / Mouse).
+
 **Running**
+
 All players enter a shared map.
 Use the keyboard (WASD or arrow keys) to move.
 The Cat chases the Mice.
