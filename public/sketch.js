@@ -13,10 +13,14 @@ let roomState = null;
 const root = /** @type {any} */ (window);
 let mapScene = null;
 let playerController = null;
+let gpsNavigation = null;
 let timerLoopId = null;
 let localGameEndsAt = null;
 
 let gameStarted = false;
+let navMode = "virtual";
+const NAV_MODE_KEY = "cat_mice_nav_mode";
+let serverGoogleApiKey = "";
 
 const actionBusy = { start: false };
 
@@ -33,24 +37,30 @@ const SEAT_SLOT_POS = [
 const ui = {
   coverScene: document.getElementById("coverScene"),
   gameScene: document.getElementById("gameScene"),
-  overlay: document.getElementById("lobbyOverlay"),
   hostBtn: document.getElementById("hostBtn"),
   startBtn: document.getElementById("startBtn"),
   roomLine: document.getElementById("roomLine"),
   statusText: document.getElementById("statusText"),
   errorText: document.getElementById("errorText"),
   seats: document.getElementById("seats"),
-  hud: document.getElementById("hud")
+  modeVirtualBtn: document.getElementById("modeVirtualBtn"),
+  modeApiBtn: document.getElementById("modeApiBtn"),
+  gpsPanel: document.getElementById("gpsPanel"),
+  gpsModeLine: document.getElementById("gpsModeLine"),
+  virtualGpsControls: document.getElementById("virtualGpsControls"),
+  virtualTarget: document.getElementById("virtualTarget"),
+  gpsOutput: document.getElementById("gpsOutput"),
+  gpsMap: document.getElementById("gpsMap"),
+  realMapHud: document.getElementById("realMapHud"),
+  rmStatus: document.getElementById("rmStatus"),
+  rmSpeed: document.getElementById("rmSpeed"),
+  rmDist: document.getElementById("rmDist"),
+  rmTimer: document.getElementById("rmTimer")
 };
 
-const statusEl = () => document.getElementById("status");
 const timerEl = () => document.getElementById("timer");
 
 // ----- HUD -----
-function setHudStatus(text) {
-  if (statusEl()) statusEl().textContent = `Status: ${text}`;
-}
-
 function setError(msg = "") {
   if (ui.errorText) ui.errorText.textContent = msg;
 }
@@ -84,6 +94,48 @@ function renderTimer() {
   t.textContent = formatLeftMs(left);
 }
 
+function getGoogleApiKey() {
+  return serverGoogleApiKey;
+}
+
+async function loadServerConfig() {
+  try {
+    const resp = await fetch("/api/client-config", { cache: "no-store" });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const serverKey = (data?.googleMapsApiKey || "").trim();
+    if (!serverKey) return;
+    serverGoogleApiKey = serverKey;
+    gpsNavigation?.refresh?.();
+  } catch (_err) {
+    // ignore config fetch failures
+  }
+}
+
+function applyModeUi() {
+  const isApi = navMode === "api";
+  ui.modeVirtualBtn?.classList.toggle("active", !isApi);
+  ui.modeApiBtn?.classList.toggle("active", isApi);
+  ui.gpsPanel?.classList.toggle("hidden", !isApi);
+  document.body.classList.toggle("real-map-mode", isApi);
+  if (ui.gpsModeLine) {
+    ui.gpsModeLine.textContent = isApi ? "GPS: Real Map Navigation" : "GPS: Virtual Map Navigation";
+  }
+}
+
+function setNavMode(mode) {
+  navMode = mode === "api" ? "api" : "virtual";
+  localStorage.setItem(NAV_MODE_KEY, navMode);
+  applyModeUi();
+  gpsNavigation?.refresh?.();
+}
+
+function initNavMode() {
+  const savedMode = localStorage.getItem(NAV_MODE_KEY);
+  navMode = savedMode === "api" ? "api" : "virtual";
+  applyModeUi();
+}
+
 function startTimerLoop() {
   if (timerLoopId !== null) return;
   timerLoopId = window.setInterval(renderTimer, 250);
@@ -103,6 +155,7 @@ function setGameScene(active) {
   if (ui.gameScene) ui.gameScene.style.display = active ? "block" : "none";
   if (active) ensureLocalPlayer();
   playerController?.setEnabled(active);
+  gpsNavigation?.refresh?.();
   renderTimer();
 }
 
@@ -324,6 +377,9 @@ function renderRoomState() {
 
 // ----- UI bindings -----
 function bindUI() {
+  ui.modeVirtualBtn?.addEventListener("click", () => setNavMode("virtual"));
+  ui.modeApiBtn?.addEventListener("click", () => setNavMode("api"));
+
   ui.seats.addEventListener("click", (e) => {
     if (e.target === ui.seats) autoTakeSeatFromBoard(e.clientX, e.clientY);
   });
@@ -343,7 +399,7 @@ function bindUI() {
 
     setError("");
     setStatus("Starting game...");
-    socket?.emit("start-game");
+    socket?.emit("start-game", { mapMode: navMode });
   };
 
   updateActionButtons();
@@ -351,6 +407,7 @@ function bindUI() {
 
 // ----- p5 -----
 function setup() {
+  initNavMode();
   bindUI();
   createCanvas(windowWidth, windowHeight);
   textFont("Trebuchet MS");
@@ -358,13 +415,36 @@ function setup() {
   playerController = root.appPlayers?.create
     ? root.appPlayers.create({
       getPlayers: () => players,
+      getMyId: () => myId
+    })
+    : null;
+  gpsNavigation = root.appGpsNavigation?.create
+    ? root.appGpsNavigation.create({
+      getMode: () => navMode,
       getMyId: () => myId,
-      onStatus: (t) => setHudStatus(t)
+      getPlayers: () => players,
+      getRoomState: () => roomState,
+      getSocket: () => socket,
+      getApiKey: getGoogleApiKey,
+      dom: {
+        panel: ui.gpsPanel,
+        modeLine: ui.gpsModeLine,
+        virtualControls: ui.virtualGpsControls,
+        virtualTarget: ui.virtualTarget,
+        output: ui.gpsOutput,
+        map: ui.gpsMap,
+        realHud: ui.realMapHud,
+        rmStatus: ui.rmStatus,
+        rmSpeed: ui.rmSpeed,
+        rmDist: ui.rmDist,
+        rmTimer: ui.rmTimer
+      }
     })
     : null;
 
   initSocket();
   startTimerLoop();
+  loadServerConfig();
 
   // Start in lobby view
   setGameScene(false);
@@ -394,12 +474,20 @@ function draw() {
     return;
   }
 
+  if (navMode === "api") {
+    // Real Map mode: keep canvas transparent so only map UI is visible.
+    clear();
+    gpsNavigation?.tick?.();
+    return;
+  }
+
   // Running = draw cartoon map in game scene
   if (mapScene?.draw) {
     mapScene.draw({ roomState, players, myId });
   } else {
     clear();
   }
+  gpsNavigation?.tick?.();
 }
 
 function windowResized() {
