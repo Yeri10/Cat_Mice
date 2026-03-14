@@ -517,10 +517,5 @@ server.on("error", (err) => {
 
 server.listen(PORT, HOST, () => {
   const localUrl = `http://localhost:${PORT}`;
-  const bindUrl = `http://${HOST}:${PORT}`;
   console.log(`Server running (local): ${localUrl}`);
-  if (HOST !== "localhost" && HOST !== "127.0.0.1") {
-    console.log(`Server bind: ${bindUrl}`);
-  }
-  console.log(`LAN access: http://<your-ip>:${PORT}`);
 });

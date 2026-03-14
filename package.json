@@ -1,5 +1,5 @@
 {
-  "name": "collaborative-poem",
+  "name": "cat-mice",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -12,16 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ngautumn/collaborative-poem.git"
+    "url": "git+https://github.com/Yeri10/Cat_Mice.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/Ngautumn/collaborative-poem/issues"
+    "url": "https://github.com/Yeri10/Cat_Mice/issues"
   },
-  "homepage": "https://github.com/Ngautumn/collaborative-poem#readme",
+  "homepage": "https://github.com/Yeri10/Cat_Mice#readme",
   "dependencies": {
     "express": "^5.2.1",
     "socket.io": "^4.8.3"
