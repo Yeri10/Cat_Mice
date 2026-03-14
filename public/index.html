@@ -51,15 +51,7 @@
       <div class="panel">
         <div class="title">Cat, Mice</div>
         <div class="sub">
-          Sit first, then start. 1-4 players supported.
-        </div>
-
-        <div class="nav-mode-wrap">
-          <div class="table-title">GPS Navigation Mode</div>
-          <div class="mode-buttons">
-            <button id="modeVirtualBtn" class="secondary mode-btn active" type="button">Virtual Map</button>
-            <button id="modeApiBtn" class="secondary mode-btn" type="button">Real Map</button>
-          </div>
+          Sit first, then start. 3-4 players only: 1 cat + 2-3 mice.
         </div>
 
         <div class="stage">
@@ -82,50 +74,6 @@
     <div id="hud">
       <div class="timer-line" id="timer">--:--</div>
     </div>
-    <div id="gpsPanel" class="gps-panel">
-      <div id="gpsModeLine" class="gps-mode">GPS: Virtual Map Navigation</div>
-      <div id="virtualGpsControls" class="gps-controls">
-        <label for="virtualTarget">Virtual Destination</label>
-        <select id="virtualTarget">
-          <option value="north_gate">北门</option>
-          <option value="east_storage">东仓库</option>
-          <option value="south_hall">南大厅</option>
-          <option value="west_corner">西角落</option>
-          <option value="center">中央点</option>
-        </select>
-      </div>
-      <div id="gpsOutput" class="gps-output">等待导航启动...</div>
-      <div id="gpsMap" class="gps-map hidden"></div>
-      <div id="realMapHud" class="real-map-hud hidden">
-        <div class="rm-top">
-          <div class="rm-title">Cat & Mice Outdoor (Real Map)</div>
-          <div class="rm-sub" id="rmStatus">Locating...</div>
-        </div>
-        <div class="rm-left">
-          <div class="rm-pill">
-            <div class="rm-num" id="rmSpeed">0.0</div>
-            <div class="rm-unit">m/s</div>
-          </div>
-          <div class="rm-pill">
-            <div class="rm-num" id="rmDist">0.00</div>
-            <div class="rm-unit">km</div>
-          </div>
-          <div class="rm-pill">
-            <div class="rm-num small" id="rmTimer">--:--</div>
-            <div class="rm-unit">countdown</div>
-          </div>
-        </div>
-        <div class="rm-right">
-          <button type="button">◎</button>
-          <button type="button">⌕</button>
-          <button type="button">⚙</button>
-        </div>
-        <div class="rm-chat" id="rmChat">
-          <div class="rm-chat-line">Me: stay moving.</div>
-          <div class="rm-chat-line">Me: spread out.</div>
-        </div>
-      </div>
-    </div>
   </div>
 
 
@@ -134,9 +82,6 @@
 
   <!-- player controller -->
   <script src="player.js"></script>
-
-  <!-- gps navigation controller -->
-  <script src="gps.js"></script>
 
   <!-- p5 sketch -->
   <script src="sketch.js"></script>

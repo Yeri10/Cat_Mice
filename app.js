@@ -31,29 +31,20 @@ const io = new Server(server);
 
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || "";
 
 app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
 });
 
-app.get("/api/client-config", (req, res) => {
-  res.json({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY
-  });
-});
-
 app.use(express.static("public"));
 
 const MAX_SEATS = 6;
-const MIN_PLAYERS = 1;
+const MIN_PLAYERS = 2;
 const MAX_PLAYERS = 4;
 const DEFAULT_ROOM_ID = "LOBBY";
 
 const CATCH_DIST = 0.06;
-const CATCH_DIST_METERS = 10;
 const CATCH_HOLD_MS = 1200;
-const GEO_STALE_MS = 8000;
 const ROUND_MS = 5 * 60 * 1000;
 
 // In-memory state (single-process runtime).
@@ -126,7 +117,6 @@ function getOrCreateDefaultRoom() {
       hostId: null,
       targetCount: MIN_PLAYERS,
       phase: "lobby",
-      mapMode: "virtual",
       seats: Array.from({ length: MAX_SEATS }, () => null),
       startedAt: null,
       endsAt: null
@@ -149,7 +139,6 @@ function roomPublicState(room) {
     hostId: room.hostId,
     targetCount: room.targetCount,
     phase: room.phase,
-    mapMode: room.mapMode || "virtual",
     startedAt: room.startedAt,
     endsAt: room.endsAt,
     seats: room.seats.map((sid, index) => {
@@ -226,7 +215,6 @@ function clearPlayerFromRoom(socketId) {
   if (roomPlayerIds(room).length === 0 && room.id === DEFAULT_ROOM_ID) {
     room.hostId = null;
     room.phase = "lobby";
-    room.mapMode = "virtual";
     room.startedAt = null;
     room.endsAt = null;
     room.targetCount = MIN_PLAYERS;
@@ -237,7 +225,7 @@ function clearPlayerFromRoom(socketId) {
 }
 
 // Validate start conditions and assign one random cat.
-function startGame(room, bySocketId, mapMode = "virtual") {
+function startGame(room, bySocketId) {
   if (room.hostId !== bySocketId) {
     return { ok: false, message: "Only host can start the game." };
   }
@@ -246,8 +234,8 @@ function startGame(room, bySocketId, mapMode = "virtual") {
   }
 
   const seated = roomPlayerIds(room);
-  if (seated.length < 1 || seated.length > 4) {
-    return { ok: false, message: "Need 1-4 seated players." };
+  if (seated.length < 2 || seated.length > 4) {
+    return { ok: false, message: "Need 2-4 seated players (1 cat + 1-3 mice)." };
   }
 
   const catIndex = Math.floor(Math.random() * seated.length);
@@ -265,7 +253,6 @@ function startGame(room, bySocketId, mapMode = "virtual") {
   if (players[catId]) players[catId].role = "cat";
 
   room.phase = "running";
-  room.mapMode = mapMode === "api" ? "api" : "virtual";
   room.startedAt = Date.now();
   room.endsAt = room.startedAt + ROUND_MS;
 
@@ -274,23 +261,11 @@ function startGame(room, bySocketId, mapMode = "virtual") {
   io.to(room.id).emit("game-started", {
     roomId: room.id,
     targetCount: room.targetCount,
-      catId,
-      mapMode: room.mapMode,
-      endsAt: room.endsAt
-    });
+    catId,
+    endsAt: room.endsAt
+  });
 
   return { ok: true };
-}
-
-function haversineMeters(a, b) {
-  const toRad = (v) => (v * Math.PI) / 180;
-  const R = 6371000;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const q =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  return 2 * R * Math.atan2(Math.sqrt(q), Math.sqrt(1 - q));
 }
 
 // Main game loop: timeout checks, catch checks, and player state broadcast.
@@ -313,26 +288,13 @@ function tickCatchRules() {
 
     for (const cat of cats) {
       for (const mouse of mice) {
-        let isNear = false;
-        if (room.mapMode === "api") {
-          const cGeo = cat?.geo;
-          const mGeo = mouse?.geo;
-          const cFresh = Number.isFinite(cGeo?.at) && now - cGeo.at <= GEO_STALE_MS;
-          const mFresh = Number.isFinite(mGeo?.at) && now - mGeo.at <= GEO_STALE_MS;
-          if (cFresh && mFresh) {
-            const meters = haversineMeters(cGeo, mGeo);
-            isNear = meters <= CATCH_DIST_METERS;
-          }
-        } else {
-          const dx = cat.x - mouse.x;
-          const dy = cat.y - mouse.y;
-          const d = Math.hypot(dx, dy);
-          isNear = d < CATCH_DIST;
-        }
+        const dx = cat.x - mouse.x;
+        const dy = cat.y - mouse.y;
+        const d = Math.hypot(dx, dy);
         // room|cat|mouse key ensures catch-hold timer is per pair.
         const key = `${room.id}|${cat.id}|${mouse.id}`;
 
-        if (isNear) {
+        if (d < CATCH_DIST) {
           if (!proximityTimers.has(key)) proximityTimers.set(key, now);
           const start = proximityTimers.get(key);
           if (now - start >= CATCH_HOLD_MS) {
@@ -382,7 +344,6 @@ io.on("connection", (socket) => {
     seatIndex: null,
     x: Math.random(),
     y: Math.random(),
-    geo: null,
     last: Date.now(),
     caught: false
   };
@@ -497,14 +458,14 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("start-game", ({ mapMode } = {}) => {
+  socket.on("start-game", () => {
     const p = players[socket.id];
     if (!p?.roomId) return;
 
     const room = getRoom(p.roomId);
     if (!room) return;
 
-    const result = startGame(room, socket.id, mapMode);
+    const result = startGame(room, socket.id);
     if (!result.ok) socket.emit("room-error", { message: result.message });
   });
 
@@ -525,21 +486,6 @@ io.on("connection", (socket) => {
     p.x = next.x;
     p.y = next.y;
     p.last = Date.now();
-  });
-
-  socket.on("geo-pos", ({ lat, lng, heading, speed, acc }) => {
-    const p = players[socket.id];
-    if (!p?.roomId) return;
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-
-    p.geo = {
-      lat,
-      lng,
-      heading: Number.isFinite(heading) ? heading : null,
-      speed: Number.isFinite(speed) ? speed : null,
-      acc: Number.isFinite(acc) ? acc : null,
-      at: Date.now()
-    };
   });
 
   socket.on("disconnect", () => {
@@ -571,5 +517,10 @@ server.on("error", (err) => {
 
 server.listen(PORT, HOST, () => {
   const localUrl = `http://localhost:${PORT}`;
+  const bindUrl = `http://${HOST}:${PORT}`;
   console.log(`Server running (local): ${localUrl}`);
+  if (HOST !== "localhost" && HOST !== "127.0.0.1") {
+    console.log(`Server bind: ${bindUrl}`);
+  }
+  console.log(`LAN access: http://<your-ip>:${PORT}`);
 });
