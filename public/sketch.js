@@ -18,8 +18,6 @@ let localGameEndsAt = null;
 
 let gameStarted = false;
 
-const actionBusy = { start: false };
-
 const SEAT_SLOT_POS = [
   { x: 50, y: 16 },
   { x: 74, y: 30 },
@@ -33,24 +31,17 @@ const SEAT_SLOT_POS = [
 const ui = {
   coverScene: document.getElementById("coverScene"),
   gameScene: document.getElementById("gameScene"),
-  overlay: document.getElementById("lobbyOverlay"),
   hostBtn: document.getElementById("hostBtn"),
   startBtn: document.getElementById("startBtn"),
   roomLine: document.getElementById("roomLine"),
   statusText: document.getElementById("statusText"),
   errorText: document.getElementById("errorText"),
-  seats: document.getElementById("seats"),
-  hud: document.getElementById("hud")
+  seats: document.getElementById("seats")
 };
 
-const statusEl = () => document.getElementById("status");
 const timerEl = () => document.getElementById("timer");
 
 // ----- HUD -----
-function setHudStatus(text) {
-  if (statusEl()) statusEl().textContent = `Status: ${text}`;
-}
-
 function setError(msg = "") {
   if (ui.errorText) ui.errorText.textContent = msg;
 }
@@ -116,9 +107,9 @@ function updateActionButtons() {
   const inLobby = roomState?.phase === "lobby";
   const isHost = inRoom && roomState?.hostId === myId;
 
-  ui.hostBtn.disabled = !isConnected() || actionBusy.start;
+  ui.hostBtn.disabled = !isConnected();
   ui.hostBtn.textContent = isHost ? "You Are Host (Seat 1)" : "Become Host";
-  ui.startBtn.disabled = !isConnected() || actionBusy.start || !inLobby;
+  ui.startBtn.disabled = !isConnected() || !inLobby;
 }
 
 function initSocket() {
@@ -264,11 +255,18 @@ function renderSeats() {
     const btn = document.createElement("button");
     const isHostSeat = !seat.empty && roomState?.hostId === seat.socketId;
     const potClass = `pot-${seat.index % 5}`;
-    btn.className = `seat slot-${seat.index} ${potClass} ${seat.empty ? "empty" : ""} ${!seat.empty && seat.socketId === myId ? "me" : ""} ${isHostSeat ? "host" : ""}`;
+    const seatStateClass = seat.empty ? "empty" : "";
+    const mySeatClass = !seat.empty && seat.socketId === myId ? "me" : "";
+    const hostClass = isHostSeat ? "host" : "";
+    btn.className = `seat slot-${seat.index} ${potClass} ${seatStateClass} ${mySeatClass} ${hostClass}`;
     btn.type = "button";
 
     if (seat.empty) {
-      btn.innerHTML = `<div class="idx">Seat ${seat.index + 1}</div><div class="seat-circle">+</div><div class="seat-shadow"></div>`;
+      btn.innerHTML = [
+        `<div class="idx">Seat ${seat.index + 1}</div>`,
+        '<div class="seat-circle">+</div>',
+        '<div class="seat-shadow"></div>'
+      ].join("");
       btn.onclick = () => {
         if (roomState?.phase && roomState.phase !== "lobby") return;
         if (seat.index === 0 && roomState.hostId !== myId) {
@@ -283,8 +281,16 @@ function renderSeats() {
       const hostTag = isHostSeat ? `<div class="host-tag">HOST</div>` : "";
       const occupant = players[seat.socketId];
       const icon = occupant?.role === "cat" ? "🐱" : occupant?.role === "mouse" ? "🐭" : "🙂";
-      const seatCircle = mine ? `<div class="seat-circle seated-mark">Seated</div>` : `<div class="seat-circle">${icon}</div>`;
-      btn.innerHTML = `<div class="idx">Seat ${seat.index + 1}</div><div class="name">${seat.name}</div>${seatCircle}<div class="seat-shadow"></div>${hostTag}`;
+      const seatCircle = mine
+        ? '<div class="seat-circle seated-mark">Seated</div>'
+        : `<div class="seat-circle">${icon}</div>`;
+      btn.innerHTML = [
+        `<div class="idx">Seat ${seat.index + 1}</div>`,
+        `<div class="name">${seat.name}</div>`,
+        seatCircle,
+        '<div class="seat-shadow"></div>',
+        hostTag
+      ].join("");
       btn.onclick = () => {
         if (mine) socket?.emit("leave-seat");
       };
@@ -306,7 +312,8 @@ function renderRoomState() {
   const seated = roomState.seats.filter((s) => !s.empty).length;
   const isHost = roomState.hostId === myId;
 
-  ui.roomLine.textContent = `Host: ${isHost ? "You" : roomState.hostId ? "Another player" : "None"} | Seated: ${seated}`;
+  const hostLabel = isHost ? "You" : roomState.hostId ? "Another player" : "None";
+  ui.roomLine.textContent = `Host: ${hostLabel} | Seated: ${seated}`;
 
   if (roomState.phase === "running") {
     const myInfo = players[myId];
@@ -358,8 +365,7 @@ function setup() {
   playerController = root.appPlayers?.create
     ? root.appPlayers.create({
       getPlayers: () => players,
-      getMyId: () => myId,
-      onStatus: (t) => setHudStatus(t)
+      getMyId: () => myId
     })
     : null;
 
@@ -384,7 +390,6 @@ function drawLobbyBackground() {
   fill("#f3f7ff");
   ellipse(width * 0.82, height * 0.16, 130, 82);
 }
-
 
 function draw() {
   if (!gameStarted) {

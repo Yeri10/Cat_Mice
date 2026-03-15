@@ -44,6 +44,8 @@ canvas{
   inset:0 !important;
   z-index:5;
   display:block;
+  background:transparent !important;
+  pointer-events:none;
 }
 
 #hud{
@@ -54,6 +56,10 @@ canvas{
   width:min(980px, calc(100vw - 24px));
   z-index:60;
   pointer-events:none;
+}
+
+#lobbyOverlay{
+  z-index:20;
 }
 
 #hud .timer-line{

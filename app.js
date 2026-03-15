@@ -406,6 +406,8 @@ io.on("connection", (socket) => {
     const hostSeatOccupant = room.seats[hostSeatIndex];
     const myCurrentSeat = typeof p.seatIndex === "number" ? p.seatIndex : null;
 
+    // Host always owns seat 1. If someone is already there,
+    // move them to the caller's old seat or the next free seat.
     if (hostSeatOccupant && hostSeatOccupant !== socket.id) {
       if (myCurrentSeat !== null) {
         room.seats[myCurrentSeat] = hostSeatOccupant;
