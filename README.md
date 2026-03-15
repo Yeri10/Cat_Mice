@@ -7,6 +7,8 @@ A real-time multiplayer spatial pursuit game
 **Group Project**
 Yirun Ye & Shuran Zhang
 
+Monday, 8 February 2026
+
 GitHub: [https://github.com/Yeri10/Cat_Mice](https://github.com/Yeri10/Cat_Mice)
 
 Web: [https://cat-mice-local.onrender.com)
@@ -103,5 +105,4 @@ http://localhost:3000
 Hanna, W. and Barbera, J. (1940) *Tom and Jerry*. Metro-Goldwyn-Mayer.
 
 This project draws inspiration from the spatial chase dynamics and relational tension between cat and mouse characters, translating animated pursuit structures into a multiplayer interactive spatial system.
-
 
