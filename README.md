@@ -11,7 +11,7 @@ Monday, 8 February 2026
 
 GitHub: [https://github.com/Yeri10/Cat_Mice](https://github.com/Yeri10/Cat_Mice)
 
-Web: [https://cat-mice-local.onrender.com)
+Web: https://cat-mice-local.onrender.com
 
 
 # 1. Project Description 
