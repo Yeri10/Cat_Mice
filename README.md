@@ -115,6 +115,9 @@ This project draws inspiration from the spatial chase dynamics and relational te
 
 # Acknowledgements
 
-We would like to thank everyone who contributed ideas, feedback, and playtesting during the development of this project.
-Special thanks to the open-source communities behind p5.js, Node.js, and Socket.io, whose tools made this real-time multiplayer experience possible.
-We also acknowledge the collaborative effort behind shaping the visual, technical, and interactive direction of *Cat & Mouse: Multiplayer Territory Game*.
+This project uses the following tools and resources:
+- p5.js
+- p5.sound
+- Node.js
+- Express
+- Socket.io
