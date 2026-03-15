@@ -4,17 +4,17 @@
 
 A real-time multiplayer spatial pursuit game
 
-**Author**
+# Author
 
 Yirun Ye
 
 Shuran Zhang
 
-**Date**
+# Date
 
 Monday, 8 February 2026
 
-**Link**
+# Link
 
 GitHub: [https://github.com/Yeri10/Cat_Mice](https://github.com/Yeri10/Cat_Mice)
 
