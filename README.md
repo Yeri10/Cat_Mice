@@ -6,7 +6,7 @@ A real-time multiplayer spatial pursuit game
 
 # Author
 
-Yirun Ye
+Yerie Ye
 
 Shuran Zhang
 
